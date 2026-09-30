@@ -26,96 +26,106 @@ body {
 h1 {
   text-align: center;
   font-size: 25px;
-  margin: 10px 0 25px;
+  margin: 10px 0 24px;
 }
 
 .card {
   background: white;
   border-radius: 18px;
   padding: 20px;
-  margin-bottom: 16px;
-  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+  margin-bottom: 18px;
+  box-shadow: 0 3px 12px rgba(0,0,0,.08);
 }
 
-.label {
-  font-size: 16px;
-  font-weight: bold;
+label {
+  display: block;
+  font-weight: 700;
   margin-bottom: 8px;
 }
 
-input {
+select {
   width: 100%;
-  font-size: 28px;
-  text-align: center;
-  padding: 12px;
-  border: 2px solid #ddd;
+  padding: 14px;
+  font-size: 17px;
+  border: 1px solid #ccc;
   border-radius: 12px;
+  background: white;
 }
 
-.row {
+.section-title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+
+.hearts {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
 }
 
-.result {
+.heart-box {
+  border-radius: 14px;
+  padding: 10px 5px;
   text-align: center;
-  padding: 25px 15px;
-  border-radius: 18px;
-  margin-top: 10px;
+  background: #f1f1f1;
 }
 
-.result.success {
-  background: #dff7e5;
-  color: #16743a;
+.heart-icon {
+  font-size: 27px;
+  line-height: 1.2;
 }
 
-.result.fail {
-  background: #ffe2e2;
-  color: #b42323;
+.heart-name {
+  font-size: 12px;
+  margin-top: 4px;
 }
 
-.result-title {
-  font-size: 26px;
-  font-weight: bold;
+.heart-number {
+  font-size: 22px;
+  font-weight: 800;
+  margin-top: 3px;
 }
 
-.big-number {
-  font-size: 48px;
-  font-weight: bold;
+.pink { background: #ffe1ee; }
+.green { background: #dff5df; }
+.blue { background: #dceeff; }
+.red { background: #ffe0e0; }
+.yellow { background: #fff4c7; }
+.purple { background: #eadfff; }
+.gray { background: #e5e5e5; }
+
+.total {
+  text-align: center;
+  font-size: 34px;
+  font-weight: 800;
   margin: 8px 0;
 }
 
-.detail {
-  font-size: 17px;
-  line-height: 1.8;
-}
-
-button {
-  width: 100%;
-  border: none;
-  border-radius: 14px;
+.status {
+  text-align: center;
   padding: 15px;
-  font-size: 18px;
-  font-weight: bold;
-  background: #222;
-  color: white;
+  border-radius: 14px;
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 14px;
 }
 
-button:active {
-  transform: scale(0.98);
+.success {
+  background: #dff5df;
+  color: #18752a;
 }
 
-.reset {
-  background: #888;
-  margin-top: 10px;
+.fail {
+  background: #ffe0e0;
+  color: #c62828;
 }
 
-.note {
-  font-size: 13px;
+.small {
+  text-align: center;
   color: #777;
-  margin-top: 15px;
-  line-height: 1.6;
+  font-size: 13px;
+  margin-top: 8px;
 }
 </style>
 </head>
@@ -128,135 +138,334 @@ button:active {
 
 <div class="card">
 
-  <div class="label">必要ハート</div>
-  <input id="required" type="number" min="0" value="10">
+  <label for="liveSelect">ライブカードを選択</label>
+
+  <select id="liveSelect" onchange="selectLive()">
+    <option value="">選択してください</option>
+    <option value="burn">Burn!!</option>
+    <option value="dive">DIVE!</option>
+    <option value="chase">CHASE!</option>
+  </select>
 
 </div>
 
+
 <div class="card">
 
-  <div class="row">
+  <div class="section-title">
+    ライブ成功に必要なハート
+  </div>
 
-    <div>
-      <div class="label">現在のハート</div>
-      <input id="current" type="number" min="0" value="0">
+  <div class="hearts">
+
+    <div class="heart-box pink">
+      <div class="heart-icon">🩷</div>
+      <div class="heart-name">ピンク</div>
+      <div class="heart-number" id="need-pink">0</div>
     </div>
 
-    <div>
-      <div class="label">ブレードハート</div>
-      <input id="blade" type="number" min="0" value="0">
+    <div class="heart-box green">
+      <div class="heart-icon">💚</div>
+      <div class="heart-name">緑</div>
+      <div class="heart-number" id="need-green">0</div>
+    </div>
+
+    <div class="heart-box blue">
+      <div class="heart-icon">💙</div>
+      <div class="heart-name">青</div>
+      <div class="heart-number" id="need-blue">0</div>
+    </div>
+
+    <div class="heart-box red">
+      <div class="heart-icon">❤️</div>
+      <div class="heart-name">赤</div>
+      <div class="heart-number" id="need-red">0</div>
+    </div>
+
+    <div class="heart-box yellow">
+      <div class="heart-icon">💛</div>
+      <div class="heart-name">黄</div>
+      <div class="heart-number" id="need-yellow">0</div>
+    </div>
+
+    <div class="heart-box purple">
+      <div class="heart-icon">💜</div>
+      <div class="heart-name">紫</div>
+      <div class="heart-number" id="need-purple">0</div>
+    </div>
+
+    <div class="heart-box gray">
+      <div class="heart-icon">🩶</div>
+      <div class="heart-name">任意</div>
+      <div class="heart-number" id="need-gray">0</div>
     </div>
 
   </div>
 
 </div>
 
+
 <div class="card">
 
-  <div class="label">合計ハート</div>
+  <div class="section-title">
+    必要ライブハート数
+  </div>
 
-  <div id="total" class="big-number">0</div>
+  <div class="total" id="need-total">0</div>
 
-  <div id="result" class="result fail">
+  <div class="small">
+    カードを選択すると自動計算されます
+  </div>
 
-    <div id="resultTitle" class="result-title">
-      ライブ条件未達
+</div>
+
+
+<div class="card">
+
+  <div class="section-title">
+    現在のハート
+  </div>
+
+  <div class="hearts">
+
+    <div class="heart-box pink">
+      <div class="heart-icon">🩷</div>
+      <div class="heart-number">
+        <input id="have-pink" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
     </div>
 
-    <div id="resultNumber" class="big-number">
-      あと10
+    <div class="heart-box green">
+      <div class="heart-icon">💚</div>
+      <div class="heart-number">
+        <input id="have-green" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
     </div>
 
-    <div id="detail" class="detail">
-      必要ハートまであと10
+    <div class="heart-box blue">
+      <div class="heart-icon">💙</div>
+      <div class="heart-number">
+        <input id="have-blue" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
+    </div>
+
+    <div class="heart-box red">
+      <div class="heart-icon">❤️</div>
+      <div class="heart-number">
+        <input id="have-red" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
+    </div>
+
+    <div class="heart-box yellow">
+      <div class="heart-icon">💛</div>
+      <div class="heart-number">
+        <input id="have-yellow" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
+    </div>
+
+    <div class="heart-box purple">
+      <div class="heart-icon">💜</div>
+      <div class="heart-number">
+        <input id="have-purple" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
+    </div>
+
+    <div class="heart-box gray">
+      <div class="heart-icon">🩶</div>
+      <div class="heart-number">
+        <input id="have-gray" type="number" min="0" value="0"
+        style="width:60px;text-align:center;font-size:20px;">
+      </div>
     </div>
 
   </div>
 
 </div>
 
+
 <div class="card">
 
-  <button onclick="resetValues()" class="reset">
-    リセット
-  </button>
+  <div class="section-title">
+    結果
+  </div>
 
-  <div class="note">
-    ※このアプリはライブフェイズ中のハート数確認を補助するためのものです。
+  <div class="total" id="have-total">
+    0
+  </div>
+
+  <div id="status" class="status fail">
+    ライブカードを選択してください
   </div>
 
 </div>
 
 </div>
+
 
 <script>
 
-const required = document.getElementById("required");
-const current = document.getElementById("current");
-const blade = document.getElementById("blade");
+const lives = {
 
-const total = document.getElementById("total");
-const result = document.getElementById("result");
-const resultTitle = document.getElementById("resultTitle");
-const resultNumber = document.getElementById("resultNumber");
-const detail = document.getElementById("detail");
+  burn: {
+    name: "Burn!!",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 7,
+    yellow: 0,
+    purple: 0,
+    gray: 7
+  },
 
-function calculate() {
+  dive: {
+    name: "DIVE!",
+    pink: 0,
+    green: 0,
+    blue: 3,
+    red: 4,
+    yellow: 0,
+    purple: 0,
+    gray: 5
+  },
 
-  const req = Math.max(0, Number(required.value) || 0);
-  const cur = Math.max(0, Number(current.value) || 0);
-  const bl = Math.max(0, Number(blade.value) || 0);
+  chase: {
+    name: "CHASE!",
+    pink: 0,
+    green: 0,
+    blue: 1,
+    red: 2,
+    yellow: 0,
+    purple: 0,
+    gray: 0
+  }
 
-  const sum = cur + bl;
+};
 
-  total.textContent = sum;
 
-  if (sum >= req) {
+function selectLive() {
 
-    const surplus = sum - req;
+  const key = document.getElementById("liveSelect").value;
 
-    result.className = "result success";
+  if (!key) {
+    clearNeed();
+    updateResult();
+    return;
+  }
 
-    resultTitle.textContent = "✅ ライブ条件達成";
+  const live = lives[key];
 
-    resultNumber.textContent = "+" + surplus;
+  const colors = [
+    "pink",
+    "green",
+    "blue",
+    "red",
+    "yellow",
+    "purple",
+    "gray"
+  ];
 
-    detail.textContent =
-      "必要：" + req +
-      "　現在：" + sum +
-      "　余裕：" + surplus;
+  let total = 0;
+
+  colors.forEach(color => {
+
+    const value = live[color] || 0;
+
+    document.getElementById("need-" + color).textContent = value;
+
+    total += value;
+
+  });
+
+  document.getElementById("need-total").textContent = total;
+
+  updateResult();
+
+}
+
+
+function clearNeed() {
+
+  const colors = [
+    "pink",
+    "green",
+    "blue",
+    "red",
+    "yellow",
+    "purple",
+    "gray"
+  ];
+
+  colors.forEach(color => {
+    document.getElementById("need-" + color).textContent = "0";
+  });
+
+  document.getElementById("need-total").textContent = "0";
+
+}
+
+
+function updateResult() {
+
+  const need =
+    Number(document.getElementById("need-total").textContent) || 0;
+
+  const colors = [
+    "pink",
+    "green",
+    "blue",
+    "red",
+    "yellow",
+    "purple",
+    "gray"
+  ];
+
+  let have = 0;
+
+  colors.forEach(color => {
+
+    have += Number(
+      document.getElementById("have-" + color).value
+    ) || 0;
+
+  });
+
+  document.getElementById("have-total").textContent = have;
+
+  const status = document.getElementById("status");
+
+  if (!document.getElementById("liveSelect").value) {
+
+    status.textContent = "ライブカードを選択してください";
+    status.className = "status fail";
+
+  } else if (have >= need) {
+
+    status.textContent = "✓ ライブ成功";
+    status.className = "status success";
 
   } else {
 
-    const deficit = req - sum;
+    status.textContent =
+      "あと " + (need - have) + " ハート";
 
-    result.className = "result fail";
+    status.className = "status fail";
 
-    resultTitle.textContent = "❌ ライブ条件未達";
-
-    resultNumber.textContent = "あと " + deficit;
-
-    detail.textContent =
-      "必要：" + req +
-      "　現在：" + sum +
-      "　不足：" + deficit;
   }
+
 }
 
-function resetValues() {
 
-  required.value = 10;
-  current.value = 0;
-  blade.value = 0;
+document.querySelectorAll('input[type="number"]').forEach(input => {
 
-  calculate();
-}
+  input.addEventListener("input", updateResult);
 
-required.addEventListener("input", calculate);
-current.addEventListener("input", calculate);
-blade.addEventListener("input", calculate);
-
-calculate();
+});
 
 </script>
 
