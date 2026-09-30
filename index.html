@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ラブカ ライブフェイズ補助</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+  background: #f5f5f7;
+  color: #222;
+}
+
+.container {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  font-size: 25px;
+  margin: 10px 0 25px;
+}
+
+.card {
+  background: white;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.08);
+}
+
+.label {
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+input {
+  width: 100%;
+  font-size: 28px;
+  text-align: center;
+  padding: 12px;
+  border: 2px solid #ddd;
+  border-radius: 12px;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.result {
+  text-align: center;
+  padding: 25px 15px;
+  border-radius: 18px;
+  margin-top: 10px;
+}
+
+.result.success {
+  background: #dff7e5;
+  color: #16743a;
+}
+
+.result.fail {
+  background: #ffe2e2;
+  color: #b42323;
+}
+
+.result-title {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.big-number {
+  font-size: 48px;
+  font-weight: bold;
+  margin: 8px 0;
+}
+
+.detail {
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+button {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 15px;
+  font-size: 18px;
+  font-weight: bold;
+  background: #222;
+  color: white;
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+.reset {
+  background: #888;
+  margin-top: 10px;
+}
+
+.note {
+  font-size: 13px;
+  color: #777;
+  margin-top: 15px;
+  line-height: 1.6;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🎤 ラブカ<br>ライブフェイズ補助</h1>
+
+<div class="card">
+
+  <div class="label">必要ハート</div>
+  <input id="required" type="number" min="0" value="10">
+
+</div>
+
+<div class="card">
+
+  <div class="row">
+
+    <div>
+      <div class="label">現在のハート</div>
+      <input id="current" type="number" min="0" value="0">
+    </div>
+
+    <div>
+      <div class="label">ブレードハート</div>
+      <input id="blade" type="number" min="0" value="0">
+    </div>
+
+  </div>
+
+</div>
+
+<div class="card">
+
+  <div class="label">合計ハート</div>
+
+  <div id="total" class="big-number">0</div>
+
+  <div id="result" class="result fail">
+
+    <div id="resultTitle" class="result-title">
+      ライブ条件未達
+    </div>
+
+    <div id="resultNumber" class="big-number">
+      あと10
+    </div>
+
+    <div id="detail" class="detail">
+      必要ハートまであと10
+    </div>
+
+  </div>
+
+</div>
+
+<div class="card">
+
+  <button onclick="resetValues()" class="reset">
+    リセット
+  </button>
+
+  <div class="note">
+    ※このアプリはライブフェイズ中のハート数確認を補助するためのものです。
+  </div>
+
+</div>
+
+</div>
+
+<script>
+
+const required = document.getElementById("required");
+const current = document.getElementById("current");
+const blade = document.getElementById("blade");
+
+const total = document.getElementById("total");
+const result = document.getElementById("result");
+const resultTitle = document.getElementById("resultTitle");
+const resultNumber = document.getElementById("resultNumber");
+const detail = document.getElementById("detail");
+
+function calculate() {
+
+  const req = Math.max(0, Number(required.value) || 0);
+  const cur = Math.max(0, Number(current.value) || 0);
+  const bl = Math.max(0, Number(blade.value) || 0);
+
+  const sum = cur + bl;
+
+  total.textContent = sum;
+
+  if (sum >= req) {
+
+    const surplus = sum - req;
+
+    result.className = "result success";
+
+    resultTitle.textContent = "✅ ライブ条件達成";
+
+    resultNumber.textContent = "+" + surplus;
+
+    detail.textContent =
+      "必要：" + req +
+      "　現在：" + sum +
+      "　余裕：" + surplus;
+
+  } else {
+
+    const deficit = req - sum;
+
+    result.className = "result fail";
+
+    resultTitle.textContent = "❌ ライブ条件未達";
+
+    resultNumber.textContent = "あと " + deficit;
+
+    detail.textContent =
+      "必要：" + req +
+      "　現在：" + sum +
+      "　不足：" + deficit;
+  }
+}
+
+function resetValues() {
+
+  required.value = 10;
+  current.value = 0;
+  blade.value = 0;
+
+  calculate();
+}
+
+required.addEventListener("input", calculate);
+current.addEventListener("input", calculate);
+blade.addEventListener("input", calculate);
+
+calculate();
+
+</script>
+
+</body>
+</html>
