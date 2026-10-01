@@ -49,6 +49,8 @@ h1 {
   margin: 0 0 14px;
 }
 
+/* ライブカード横スクロール */
+
 .horizontal-scroll {
   display: flex;
   overflow-x: auto;
@@ -76,31 +78,20 @@ h1 {
   margin-top: 8px;
 }
 
-.live-card {
-  margin-bottom: 0;
-}
+/* ライブ選択 */
 
-.member-card {
-  margin-bottom: 0;
-}
-
-.member-title {
-  font-size: 17px;
-  font-weight: bold;
-  margin-bottom: 12px;
-}
-
-.card-name {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 4px;
-}
-
-.card-number {
-  color: #888;
-  font-size: 12px;
+.live-select {
+  width: 100%;
+  height: 46px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  padding: 0 10px;
+  font-size: 15px;
+  background: #fff;
   margin-bottom: 14px;
 }
+
+/* ハート */
 
 .heart-grid {
   display: grid;
@@ -159,6 +150,8 @@ h1 {
   color: #555;
 }
 
+/* 合計 */
+
 .total-box {
   margin-top: 14px;
   padding: 12px;
@@ -173,6 +166,8 @@ h1 {
   font-size: 24px;
   margin-left: 6px;
 }
+
+/* 入力 */
 
 .input-grid {
   display: grid;
@@ -201,6 +196,16 @@ h1 {
   font-size: 18px;
   background: #fff;
 }
+
+/* メンバー */
+
+.member-title {
+  font-size: 17px;
+  font-weight: bold;
+  margin-bottom: 12px;
+}
+
+/* ライブ必要ハート調整 */
 
 .adjust-title {
   font-size: 13px;
@@ -243,6 +248,8 @@ h1 {
   transform: scale(0.95);
 }
 
+/* 現在のハート */
+
 .current-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -264,6 +271,8 @@ h1 {
 .current-value {
   font-size: 21px;
 }
+
+/* 結果 */
 
 .result {
   text-align: center;
@@ -290,6 +299,8 @@ h1 {
   font-weight: normal;
 }
 
+/* リセット */
+
 button.reset {
   width: 100%;
   height: 50px;
@@ -314,6 +325,7 @@ button.reset:active {
 }
 
 @media (max-width: 430px) {
+
   .container {
     padding: 12px;
   }
@@ -350,29 +362,35 @@ button.reset:active {
 
 <h1>🎤 ラブカ ライブフェイズ補助</h1>
 
+
 <!-- =========================
      ライブカード
 ========================= -->
+
 <div class="card">
+
   <h2>🎵 ライブカード</h2>
 
   <div id="liveCards" class="horizontal-scroll"></div>
 
   <div class="swipe-note">
-    ← 左右にスワイプして3枚を切り替え →
+    ← 左右にスワイプしてライブを切り替え →
   </div>
 
   <div class="total-box">
-    3枚合計 必要ハート
+    選択したライブの必要ハート
     <div id="requiredTotal">0</div>
   </div>
+
 </div>
 
 
 <!-- =========================
      メンバー
 ========================= -->
+
 <div class="card">
+
   <h2>👥 メンバーが持っているハート</h2>
 
   <div id="memberInputs" class="horizontal-scroll"></div>
@@ -385,13 +403,16 @@ button.reset:active {
     メンバー合計
     <span id="memberTotal">0</span>
   </div>
+
 </div>
 
 
 <!-- =========================
      エール
 ========================= -->
+
 <div class="card">
+
   <h2>✨ エールでめくったハート</h2>
 
   <div class="input-grid" id="cheerInputs"></div>
@@ -400,13 +421,16 @@ button.reset:active {
     エール合計
     <span id="cheerTotal">0</span>
   </div>
+
 </div>
 
 
 <!-- =========================
      現在の使えるハート
 ========================= -->
+
 <div class="card">
+
   <h2>💎 現在の使えるハート</h2>
 
   <div class="current-grid" id="currentHearts"></div>
@@ -415,25 +439,31 @@ button.reset:active {
     現在の合計
     <span id="currentTotal">0</span>
   </div>
+
 </div>
 
 
 <!-- =========================
      結果
 ========================= -->
+
 <div class="card">
+
   <h2>🎯 結果</h2>
 
   <div id="result" class="result failure">
-    未判定
+    ライブカードを選択してください
   </div>
+
 </div>
 
 
 <!-- =========================
      リセット
 ========================= -->
+
 <div class="card">
+
   <button class="reset" onclick="resetAll()">
     🔄 すべてリセット
   </button>
@@ -441,12 +471,17 @@ button.reset:active {
   <div class="note">
     ※「任意」は不足している色の代わりに使用できます。
   </div>
+
 </div>
 
 </div>
 
 
 <script>
+
+/* =====================================================
+   ハートの種類
+===================================================== */
 
 const colors = [
   { key:"pink",   name:"ピンク", class:"pink" },
@@ -459,9 +494,9 @@ const colors = [
 ];
 
 
-/* =========================
-   ライブカードデータ
-========================= */
+/* =====================================================
+   ライブカード一覧
+===================================================== */
 
 const liveCards = [
 
@@ -682,9 +717,40 @@ const liveCards = [
 ];
 
 
-/* =========================
-   共通関数
-========================= */
+/* =====================================================
+   選択状態
+===================================================== */
+
+/*
+  -1 = 未選択
+*/
+
+let selectedLives = [-1, -1, -1];
+
+
+/*
+  最近選択したライブのID
+
+  新しく選択したものほど先頭
+*/
+
+let recentLives = [];
+
+
+/*
+  ライブカードごとの必要ハート調整
+*/
+
+const cardAdjustments = [
+  emptyHearts(),
+  emptyHearts(),
+  emptyHearts()
+];
+
+
+/* =====================================================
+   共通
+===================================================== */
 
 function emptyHearts() {
 
@@ -695,74 +761,211 @@ function emptyHearts() {
   });
 
   return result;
+
 }
 
 
-/* =========================
-   ライブカードごとの調整値
-========================= */
+/* =====================================================
+   選択候補の並びを作る
+===================================================== */
 
-const cardAdjustments = [
-  emptyHearts(),
-  emptyHearts(),
-  emptyHearts()
-];
+function getLiveOptions() {
+
+  const options = [];
+
+  /*
+    未選択を必ず一番上
+  */
+
+  options.push({
+    index:-1,
+    name:"未選択"
+  });
 
 
-/* =========================
+  /*
+    最近選択したカード
+  */
+
+  recentLives.forEach(index => {
+
+    if(index >= 0 && index < liveCards.length) {
+
+      options.push({
+        index:index,
+        name:liveCards[index].name,
+        recent:true
+      });
+
+    }
+
+  });
+
+
+  /*
+    残りのカード
+  */
+
+  liveCards.forEach((live,index) => {
+
+    if(!recentLives.includes(index)) {
+
+      options.push({
+        index:index,
+        name:live.name,
+        recent:false
+      });
+
+    }
+
+  });
+
+
+  return options;
+
+}
+
+
+/* =====================================================
+   最近選択したカードを更新
+===================================================== */
+
+function rememberLive(index) {
+
+  if(index < 0) {
+    return;
+  }
+
+  /*
+    一旦削除
+  */
+
+  recentLives =
+    recentLives.filter(
+      item => item !== index
+    );
+
+
+  /*
+    一番上へ
+  */
+
+  recentLives.unshift(index);
+
+}
+
+
+/* =====================================================
    ライブカード生成
-========================= */
+===================================================== */
 
 function createLiveCards() {
 
-  const container = document.getElementById("liveCards");
+  const container =
+    document.getElementById("liveCards");
 
   container.innerHTML = "";
 
+
   for(let i = 0; i < 3; i++) {
 
-    const wrapper = document.createElement("div");
-    wrapper.className = "horizontal-item";
+    const wrapper =
+      document.createElement("div");
 
-    const card = document.createElement("div");
-    card.className = "live-card";
+    wrapper.className =
+      "horizontal-item";
 
-    const select = document.createElement("select");
 
-    select.style.width = "100%";
-    select.style.height = "44px";
-    select.style.border = "1px solid #ccc";
-    select.style.borderRadius = "10px";
-    select.style.padding = "0 10px";
-    select.style.fontSize = "15px";
-    select.style.marginBottom = "14px";
+    const card =
+      document.createElement("div");
 
-    liveCards.forEach((live, index) => {
+    card.className =
+      "live-card";
 
-      const option = document.createElement("option");
 
-      option.value = index;
+    const select =
+      document.createElement("select");
+
+    select.className =
+      "live-select";
+
+
+    select.dataset.slot =
+      i;
+
+
+    const options =
+      getLiveOptions();
+
+
+    options.forEach(optionData => {
+
+      const option =
+        document.createElement("option");
+
+      option.value =
+        optionData.index;
+
       option.textContent =
-        live.name +
-        (live.number ? " / " + live.number : "");
+        optionData.name;
+
+      if(optionData.index === selectedLives[i]) {
+
+        option.selected = true;
+
+      }
 
       select.appendChild(option);
 
     });
 
-    select.value = i;
 
-    select.addEventListener("change", () => {
+    select.addEventListener(
+      "change",
+      function() {
 
-      updateAll();
+        const oldValue =
+          selectedLives[i];
 
-    });
+        const newValue =
+          Number(this.value);
+
+
+        selectedLives[i] =
+          newValue;
+
+
+        /*
+          新しく選択されたカードを
+          最近選択した順の先頭へ
+        */
+
+        if(newValue >= 0) {
+
+          rememberLive(newValue);
+
+        }
+
+
+        /*
+          他のスロットには触れない
+        */
+
+        updateAll();
+
+      }
+    );
+
 
     card.appendChild(select);
 
-    const info = document.createElement("div");
 
-    info.id = `liveInfo${i}`;
+    const info =
+      document.createElement("div");
+
+    info.id =
+      `liveInfo${i}`;
+
 
     card.appendChild(info);
 
@@ -772,29 +975,67 @@ function createLiveCards() {
 
   }
 
+
   updateLiveCardInfo();
 
 }
 
 
-/* =========================
-   ライブカード情報表示
-========================= */
+/* =====================================================
+   ライブカード表示
+===================================================== */
 
 function updateLiveCardInfo() {
+
+  const selects =
+    document.querySelectorAll(
+      "#liveCards select"
+    );
+
 
   for(let i = 0; i < 3; i++) {
 
     const select =
-      document.querySelectorAll("#liveCards select")[i];
+      selects[i];
 
-    const live =
-      liveCards[Number(select.value)];
+    if(!select) {
+      continue;
+    }
+
+
+    const selectedIndex =
+      Number(select.value);
+
 
     const info =
-      document.getElementById(`liveInfo${i}`);
+      document.getElementById(
+        `liveInfo${i}`
+      );
+
+
+    if(selectedIndex < 0) {
+
+      info.innerHTML = `
+        <div style="
+          text-align:center;
+          color:#999;
+          padding:20px 0;
+        ">
+          ライブカード未選択
+        </div>
+      `;
+
+      continue;
+
+    }
+
+
+    const live =
+      liveCards[selectedIndex];
+
 
     let html = "";
+
 
     html += `
       <div class="card-name">
@@ -802,36 +1043,50 @@ function updateLiveCardInfo() {
       </div>
     `;
 
+
     if(live.number) {
 
       html += `
-        <div class="card-number">
+        <div style="
+          color:#888;
+          font-size:12px;
+          margin-bottom:14px;
+        ">
           ${live.number}
         </div>
       `;
 
     }
 
+
     html += `
       <div class="heart-grid">
     `;
+
 
     colors.forEach(color => {
 
       const base =
         live.hearts[color.key] || 0;
 
+
       const adjustment =
         cardAdjustments[i][color.key];
 
+
       const value =
-        Math.max(0, base + adjustment);
+        Math.max(
+          0,
+          base + adjustment
+        );
+
 
       html += `
         <div class="heart-box ${color.class}">
           <div class="heart-name">
             ${color.name}
           </div>
+
           <div class="heart-value">
             ${value}
           </div>
@@ -840,9 +1095,15 @@ function updateLiveCardInfo() {
 
     });
 
+
     html += `
       </div>
     `;
+
+
+    /*
+      必要ハート調整
+    */
 
     html += `
       <div class="adjust-title">
@@ -852,10 +1113,12 @@ function updateLiveCardInfo() {
       <div class="adjust-grid">
     `;
 
+
     colors.forEach(color => {
 
       html += `
         <div class="adjust-box">
+
           <div class="adjust-label">
             ${color.name}
           </div>
@@ -864,85 +1127,120 @@ function updateLiveCardInfo() {
 
             <button
               type="button"
-              onclick="adjustCard(${i}, '${color.key}', -1)"
+              onclick="adjustCard(
+                ${i},
+                '${color.key}',
+                -1
+              )"
             >
               −
             </button>
 
             <button
               type="button"
-              onclick="adjustCard(${i}, '${color.key}', 1)"
+              onclick="adjustCard(
+                ${i},
+                '${color.key}',
+                1
+              )"
             >
               ＋
             </button>
 
           </div>
+
         </div>
       `;
 
     });
 
+
     html += `
       </div>
     `;
 
-    info.innerHTML = html;
+
+    info.innerHTML =
+      html;
 
   }
 
 }
 
 
-/* =========================
-   必要ハート調整
-========================= */
+/* =====================================================
+   ライブカードの必要ハート調整
+===================================================== */
 
-function adjustCard(cardIndex, colorKey, amount) {
+function adjustCard(
+  cardIndex,
+  colorKey,
+  amount
+) {
 
-  const select =
-    document.querySelectorAll("#liveCards select")[cardIndex];
+  if(selectedLives[cardIndex] < 0) {
+    return;
+  }
+
 
   const live =
-    liveCards[Number(select.value)];
+    liveCards[
+      selectedLives[cardIndex]
+    ];
+
 
   const base =
     live.hearts[colorKey] || 0;
 
+
   const current =
-    cardAdjustments[cardIndex][colorKey];
+    cardAdjustments[
+      cardIndex
+    ][colorKey];
+
 
   const next =
     current + amount;
 
+
   if(base + next < 0) {
 
-    cardAdjustments[cardIndex][colorKey] =
+    cardAdjustments[
+      cardIndex
+    ][colorKey] =
       -base;
 
   } else {
 
-    cardAdjustments[cardIndex][colorKey] =
+    cardAdjustments[
+      cardIndex
+    ][colorKey] =
       next;
 
   }
+
 
   updateAll();
 
 }
 
 
-/* =========================
+/* =====================================================
    メンバー入力
-========================= */
+===================================================== */
 
-function createMemberColorInputs(memberIndex) {
+function createMemberColorInputs(
+  memberIndex
+) {
 
   let html = "";
+
 
   colors.forEach(color => {
 
     html += `
       <div class="input-item">
+
         <label class="${color.class}">
           ${color.name}
         </label>
@@ -955,21 +1253,35 @@ function createMemberColorInputs(memberIndex) {
           data-member="${memberIndex}"
           data-color="${color.key}"
         >
+
       </div>
     `;
 
   });
 
+
   return html;
+
 }
 
 
-function createInputBoxes(containerId, type) {
+/* =====================================================
+   入力欄生成
+===================================================== */
+
+function createInputBoxes(
+  containerId,
+  type
+) {
 
   const container =
-    document.getElementById(containerId);
+    document.getElementById(
+      containerId
+    );
+
 
   container.innerHTML = "";
+
 
   if(type === "member") {
 
@@ -978,19 +1290,29 @@ function createInputBoxes(containerId, type) {
       const wrapper =
         document.createElement("div");
 
-      wrapper.className = "horizontal-item";
+      wrapper.className =
+        "horizontal-item";
+
 
       wrapper.innerHTML = `
+
         <div class="member-title">
           メンバー ${i + 1}
         </div>
 
-        <div class="input-grid" id="memberInputs${i}">
+        <div
+          class="input-grid"
+          id="memberInputs${i}"
+        >
           ${createMemberColorInputs(i)}
         </div>
+
       `;
 
-      container.appendChild(wrapper);
+
+      container.appendChild(
+        wrapper
+      );
 
     }
 
@@ -1001,9 +1323,12 @@ function createInputBoxes(containerId, type) {
       const div =
         document.createElement("div");
 
-      div.className = "input-item";
+      div.className =
+        "input-item";
+
 
       div.innerHTML = `
+
         <label class="${color.class}">
           ${color.name}
         </label>
@@ -1015,7 +1340,9 @@ function createInputBoxes(containerId, type) {
           data-type="cheer"
           data-color="${color.key}"
         >
+
       `;
+
 
       container.appendChild(div);
 
@@ -1023,24 +1350,30 @@ function createInputBoxes(containerId, type) {
 
   }
 
+
   container
     .querySelectorAll("input")
     .forEach(input => {
 
-      input.addEventListener("input", updateAll);
+      input.addEventListener(
+        "input",
+        updateAll
+      );
 
     });
 
 }
 
 
-/* =========================
+/* =====================================================
    入力値取得
-========================= */
+===================================================== */
 
 function getInputs(type) {
 
-  const result = emptyHearts();
+  const result =
+    emptyHearts();
+
 
   if(type === "member") {
 
@@ -1053,10 +1386,18 @@ function getInputs(type) {
             `input[data-type="member"][data-member="${member}"][data-color="${color.key}"]`
           );
 
-        const value =
-          Math.max(0, Number(input?.value || 0));
 
-        result[color.key] += value;
+        const value =
+          Math.max(
+            0,
+            Number(
+              input?.value || 0
+            )
+          );
+
+
+        result[color.key] +=
+          value;
 
       });
 
@@ -1071,72 +1412,113 @@ function getInputs(type) {
           `input[data-type="cheer"][data-color="${color.key}"]`
         );
 
+
       result[color.key] =
-        Math.max(0, Number(input?.value || 0));
+        Math.max(
+          0,
+          Number(
+            input?.value || 0
+          )
+        );
 
     });
 
   }
+
 
   return result;
 
 }
 
 
-/* =========================
+/* =====================================================
    ハート合計
-========================= */
+===================================================== */
 
 function heartTotal(hearts) {
 
   return Object.values(hearts)
-    .reduce((sum, value) => sum + value, 0);
+    .reduce(
+      (sum,value) =>
+        sum + value,
+      0
+    );
 
 }
 
 
-/* =========================
-   3枚の必要ハート
-========================= */
+/* =====================================================
+   1枚の必要ハート
+===================================================== */
 
-function getCardRequired(index) {
+function getCardRequired(
+  index
+) {
 
-  const select =
-    document.querySelectorAll("#liveCards select")[index];
+  const selected =
+    selectedLives[index];
 
-  const live =
-    liveCards[Number(select.value)];
 
   const result =
     emptyHearts();
+
+
+  /*
+    未選択なら0
+  */
+
+  if(selected < 0) {
+
+    return result;
+
+  }
+
+
+  const live =
+    liveCards[selected];
+
 
   colors.forEach(color => {
 
     const base =
       live.hearts[color.key] || 0;
 
+
     const adjustment =
-      cardAdjustments[index][color.key];
+      cardAdjustments[
+        index
+      ][color.key];
+
 
     result[color.key] =
-      Math.max(0, base + adjustment);
+      Math.max(
+        0,
+        base + adjustment
+      );
 
   });
+
 
   return result;
 
 }
 
 
+/* =====================================================
+   3枠の必要ハート合計
+===================================================== */
+
 function getRequiredHearts() {
 
   const result =
     emptyHearts();
 
+
   for(let i = 0; i < 3; i++) {
 
     const card =
       getCardRequired(i);
+
 
     colors.forEach(color => {
 
@@ -1147,31 +1529,42 @@ function getRequiredHearts() {
 
   }
 
+
   return result;
 
 }
 
 
-/* =========================
+/* =====================================================
    成功判定
-========================= */
+===================================================== */
 
-function checkSuccess(required, current) {
+function checkSuccess(
+  required,
+  current
+) {
 
   let fixedDeficit = 0;
 
   let coloredExtra = 0;
 
+
   const fixedColors =
-    colors.filter(color => color.key !== "any");
+    colors.filter(
+      color =>
+        color.key !== "any"
+    );
+
 
   fixedColors.forEach(color => {
 
     const req =
       required[color.key];
 
+
     const cur =
       current[color.key];
+
 
     if(cur < req) {
 
@@ -1187,21 +1580,36 @@ function checkSuccess(required, current) {
 
   });
 
+
+  /*
+    任意ハート
+    ＋
+    色付きハートの余り
+  */
+
   const anyAvailable =
-    current.any + coloredExtra;
+    current.any +
+    coloredExtra;
+
 
   const anyRequired =
     required.any;
 
+
   const totalNeeded =
-    fixedDeficit + anyRequired;
+    fixedDeficit +
+    anyRequired;
+
 
   const canSatisfy =
-    anyAvailable >= totalNeeded;
+    anyAvailable >=
+    totalNeeded;
+
 
   return {
 
-    success: canSatisfy,
+    success:
+      canSatisfy,
 
     fixedDeficit,
 
@@ -1212,7 +1620,8 @@ function checkSuccess(required, current) {
     shortage:
       Math.max(
         0,
-        totalNeeded - anyAvailable
+        totalNeeded -
+        anyAvailable
       )
 
   };
@@ -1220,19 +1629,70 @@ function checkSuccess(required, current) {
 }
 
 
-/* =========================
-   画面更新
-========================= */
+/* =====================================================
+   全体更新
+===================================================== */
 
 function updateAll() {
+
+  /*
+    現在の選択状態を保持して
+    ライブカードの候補を再生成
+  */
+
+  const oldSelected = [
+    ...selectedLives
+  ];
+
+
+  createLiveCards();
+
+
+  /*
+    createLiveCards内で
+    selectedLivesを使って復元
+  */
+
+  selectedLives[0] =
+    oldSelected[0];
+
+  selectedLives[1] =
+    oldSelected[1];
+
+  selectedLives[2] =
+    oldSelected[2];
+
+
+  /*
+    selectの表示を再調整
+  */
+
+  const selects =
+    document.querySelectorAll(
+      "#liveCards select"
+    );
+
+
+  selects.forEach(
+    (select,index) => {
+
+      select.value =
+        selectedLives[index];
+
+    }
+  );
+
 
   updateLiveCardInfo();
 
 
-  /* 必要ハート */
+  /*
+    必要ハート
+  */
 
   const required =
     getRequiredHearts();
+
 
   document.getElementById(
     "requiredTotal"
@@ -1240,10 +1700,13 @@ function updateAll() {
     heartTotal(required);
 
 
-  /* メンバー */
+  /*
+    メンバー
+  */
 
   const member =
     getInputs("member");
+
 
   document.getElementById(
     "memberTotal"
@@ -1251,10 +1714,13 @@ function updateAll() {
     heartTotal(member);
 
 
-  /* エール */
+  /*
+    エール
+  */
 
   const cheer =
     getInputs("cheer");
+
 
   document.getElementById(
     "cheerTotal"
@@ -1262,10 +1728,14 @@ function updateAll() {
     heartTotal(cheer);
 
 
-  /* 現在の使えるハート */
+  /*
+    現在の使えるハート
+    = メンバー + エール
+  */
 
   const current =
     emptyHearts();
+
 
   colors.forEach(color => {
 
@@ -1276,20 +1746,32 @@ function updateAll() {
   });
 
 
-  const currentContainer =
-    document.getElementById("currentHearts");
+  /*
+    現在のハート表示
+  */
 
-  currentContainer.innerHTML = "";
+  const currentContainer =
+    document.getElementById(
+      "currentHearts"
+    );
+
+
+  currentContainer.innerHTML =
+    "";
+
 
   colors.forEach(color => {
 
     const box =
       document.createElement("div");
 
+
     box.className =
       `current-box ${color.class}`;
 
+
     box.innerHTML = `
+
       <div class="current-label">
         ${color.name}
       </div>
@@ -1297,9 +1779,13 @@ function updateAll() {
       <div class="current-value">
         ${current[color.key]}
       </div>
+
     `;
 
-    currentContainer.appendChild(box);
+
+    currentContainer.appendChild(
+      box
+    );
 
   });
 
@@ -1310,13 +1796,47 @@ function updateAll() {
     heartTotal(current);
 
 
-  /* 結果 */
+  /*
+    選択カードがあるか
+  */
 
-  const result =
-    checkSuccess(required, current);
+  const hasLive =
+    selectedLives.some(
+      value => value >= 0
+    );
+
 
   const resultElement =
-    document.getElementById("result");
+    document.getElementById(
+      "result"
+    );
+
+
+  if(!hasLive) {
+
+    resultElement.className =
+      "result failure";
+
+
+    resultElement.innerHTML = `
+      ライブカードを選択してください
+    `;
+
+
+    return;
+
+  }
+
+
+  /*
+    成功判定
+  */
+
+  const result =
+    checkSuccess(
+      required,
+      current
+    );
 
 
   if(result.success) {
@@ -1324,14 +1844,26 @@ function updateAll() {
     resultElement.className =
       "result success";
 
+
     resultElement.innerHTML = `
+
       ✅ ライブ成功
 
       <div class="result-detail">
-        必要ハート：${heartTotal(required)}<br>
-        現在のハート：${heartTotal(current)}<br>
-        任意として使用可能：${result.anyAvailable}
+
+        必要ハート：
+        ${heartTotal(required)}
+        <br>
+
+        現在のハート：
+        ${heartTotal(current)}
+        <br>
+
+        任意として使用可能：
+        ${result.anyAvailable}
+
       </div>
+
     `;
 
   } else {
@@ -1339,14 +1871,26 @@ function updateAll() {
     resultElement.className =
       "result failure";
 
+
     resultElement.innerHTML = `
+
       ❌ ハート不足
 
       <div class="result-detail">
-        必要ハート：${heartTotal(required)}<br>
-        現在のハート：${heartTotal(current)}<br>
-        不足：${result.shortage}
+
+        必要ハート：
+        ${heartTotal(required)}
+        <br>
+
+        現在のハート：
+        ${heartTotal(current)}
+        <br>
+
+        不足：
+        ${result.shortage}
+
       </div>
+
     `;
 
   }
@@ -1354,11 +1898,31 @@ function updateAll() {
 }
 
 
-/* =========================
+/* =====================================================
    リセット
-========================= */
+===================================================== */
 
 function resetAll() {
+
+  /*
+    ライブ選択
+  */
+
+  selectedLives =
+    [-1, -1, -1];
+
+
+  /*
+    最近選択した履歴もリセット
+  */
+
+  recentLives =
+    [];
+
+
+  /*
+    ライブ調整値
+  */
 
   for(let i = 0; i < 3; i++) {
 
@@ -1367,6 +1931,10 @@ function resetAll() {
 
   }
 
+
+  /*
+    入力値
+  */
 
   document
     .querySelectorAll("input")
@@ -1377,35 +1945,29 @@ function resetAll() {
     });
 
 
-  document
-    .querySelectorAll("#liveCards select")
-    .forEach((select, index) => {
-
-      select.value = index;
-
-    });
-
-
   updateAll();
 
 }
 
 
-/* =========================
+/* =====================================================
    起動
-========================= */
-
-createLiveCards();
+===================================================== */
 
 createInputBoxes(
   "memberInputs",
   "member"
 );
 
+
 createInputBoxes(
   "cheerInputs",
   "cheer"
 );
+
+
+createLiveCards();
+
 
 updateAll();
 
