@@ -42,10 +42,21 @@ h2 {
   box-shadow: 0 2px 10px rgba(0,0,0,0.06);
 }
 
+.live-card {
+  border: 1px solid #eee;
+  box-shadow: none;
+}
+
 .card-title {
   font-size: 18px;
   font-weight: bold;
   margin-bottom: 12px;
+}
+
+.card-number {
+  font-size: 12px;
+  color: #888;
+  margin-top: 7px;
 }
 
 select {
@@ -87,6 +98,63 @@ select {
 .yellow { color: #e0a800; }
 .purple { color: #9c27b0; }
 .any { color: #777; }
+
+.adjust-title {
+  margin-top: 14px;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  color: #555;
+}
+
+.adjust-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.adjust-box {
+  background: #fafafa;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  padding: 7px 4px;
+  text-align: center;
+}
+
+.adjust-name {
+  font-size: 12px;
+  margin-bottom: 5px;
+}
+
+.adjust-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.adjust-button {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 8px;
+  font-size: 19px;
+  line-height: 1;
+  background: #e9e9ec;
+  color: #222;
+}
+
+.adjust-value {
+  min-width: 24px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.adjust-note {
+  color: #777;
+  font-size: 12px;
+  margin-top: 8px;
+}
 
 .total-box {
   background: #f0f0f2;
@@ -154,10 +222,10 @@ input[type="number"] {
   color: #777;
   font-size: 13px;
   margin-top: 8px;
+  line-height: 1.6;
 }
 
 button {
-  width: 100%;
   border: none;
   border-radius: 12px;
   padding: 13px;
@@ -167,9 +235,17 @@ button {
   color: white;
 }
 
+.reset-button {
+  width: 100%;
+}
+
 @media (max-width: 430px) {
   .heart-grid,
   .input-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+
+  .adjust-grid {
     grid-template-columns: repeat(4, 1fr);
   }
 
@@ -179,6 +255,11 @@ button {
 
   .heart-number {
     font-size: 18px;
+  }
+
+  .adjust-button {
+    width: 28px;
+    height: 30px;
   }
 }
 </style>
@@ -193,7 +274,6 @@ button {
 <!-- ライブカード -->
 <div class="card">
   <h2>🎵 ライブカード</h2>
-
   <div id="liveCards"></div>
 
   <div class="total-box">
@@ -205,7 +285,6 @@ button {
 <!-- 合計必要ハート -->
 <div class="card">
   <h2>📋 3枚合計の必要ハート</h2>
-
   <div class="heart-grid" id="requiredGrid"></div>
 </div>
 
@@ -249,38 +328,45 @@ button {
 <div id="result" class="result failure">
   <div class="result-main">ライブ条件未達</div>
   <div class="result-sub" id="resultSub">
-    必要ハートを入力してください
+    ライブカードを選択してください
   </div>
 </div>
 
-<button onclick="resetAll()">リセット</button>
+<button class="reset-button" onclick="resetAll()">リセット</button>
 
 <div class="small-note">
-※「任意」は、必要な色の不足を補うことができます。
+※「任意」は、必要な色の不足を補うことができます。<br>
+※固定色の余ったハートも「任意」として使用できます。<br>
+※各ライブカードの＋/−で、その場の状態に合わせて必要ハートを調整できます。
 </div>
 
 </div>
 
 <script>
 
+/* =========================================================
+   色
+   ========================================================= */
+
 const colors = [
-  { key: "pink", name: "ピンク", class: "pink" },
-  { key: "green", name: "緑", class: "green" },
-  { key: "blue", name: "青", class: "blue" },
-  { key: "red", name: "赤", class: "red" },
-  { key: "yellow", name: "黄", class: "yellow" },
-  { key: "purple", name: "紫", class: "purple" },
-  { key: "any", name: "任意", class: "any" }
+  { key: "pink",   name: "ピンク", class: "pink" },
+  { key: "green",  name: "緑",     class: "green" },
+  { key: "blue",   name: "青",     class: "blue" },
+  { key: "red",    name: "赤",     class: "red" },
+  { key: "yellow", name: "黄",     class: "yellow" },
+  { key: "purple", name: "紫",     class: "purple" },
+  { key: "any",    name: "任意",   class: "any" }
 ];
 
 
-/* =========================
-   ライブカードデータ
-   ========================= */
+/* =========================================================
+   ライブカード
+   ========================================================= */
 
 const liveCards = {
 
   "Burn!!": {
+    number: "",
     pink: 0,
     green: 0,
     blue: 0,
@@ -291,6 +377,7 @@ const liveCards = {
   },
 
   "DIVE!": {
+    number: "",
     pink: 0,
     green: 0,
     blue: 3,
@@ -301,6 +388,7 @@ const liveCards = {
   },
 
   "CHASE!": {
+    number: "",
     pink: 0,
     green: 0,
     blue: 1,
@@ -308,13 +396,344 @@ const liveCards = {
     yellow: 0,
     purple: 0,
     any: 0
+  },
+
+  "Just Believe!!!（sd1）": {
+    number: "PL!N-sd1-027-SD",
+    pink: 1,
+    green: 1,
+    blue: 0,
+    red: 1,
+    yellow: 0,
+    purple: 0,
+    any: 4
+  },
+
+  "Dream with You": {
+    number: "PL!N-sd1-028-SD",
+    pink: 4,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 7
+  },
+
+  "Colorful Dreams! Colorful Smiles!（sd1）": {
+    number: "PL!N-sd1-025-SD",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 4
+  },
+
+  "Butterfly": {
+    number: "PL!N-bp1-028-L",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 0,
+    purple: 5,
+    any: 7
+  },
+
+  "Eutopia": {
+    number: "PL!N-bp1-029-L",
+    pink: 5,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 7
+  },
+
+  "Solitude Rain": {
+    number: "PL!N-bp1-027-L",
+    pink: 0,
+    green: 0,
+    blue: 5,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 7
+  },
+
+  "虹色Passions！": {
+    number: "PL!N-bp1-025-L",
+    pink: 0,
+    green: 1,
+    blue: 1,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 3
+  },
+
+  "Poppin’ Up!": {
+    number: "PL!N-bp1-026-L",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 1,
+    purple: 0,
+    any: 2
+  },
+
+  "未来ハーモニー": {
+    number: "PL!N-bp3-029-L",
+    pink: 0,
+    green: 1,
+    blue: 1,
+    red: 0,
+    yellow: 1,
+    purple: 0,
+    any: 4
+  },
+
+  "NEO SKY, NEO MAP!": {
+    number: "PL!N-bp4-031-L",
+    pink: 1,
+    green: 1,
+    blue: 1,
+    red: 1,
+    yellow: 1,
+    purple: 1,
+    any: 12
+  },
+
+  "ミラクル STAY TUNE！": {
+    number: "PL!N-bp5-027-L",
+    pink: 0,
+    green: 0,
+    blue: 2,
+    red: 0,
+    yellow: 2,
+    purple: 1,
+    any: 7
+  },
+
+  "TOKIMEKI Runners": {
+    number: "PL!N-bp5-026-L",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 2,
+    purple: 0,
+    any: 4
+  },
+
+  "決意の光": {
+    number: "PL!N-sd2-027-SD2",
+    pink: 2,
+    green: 2,
+    blue: 2,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 7
+  },
+
+  "Fire Bird": {
+    number: "PL!N-sd2-026-SD2",
+    pink: 0,
+    green: 0,
+    blue: 3,
+    red: 4,
+    yellow: 0,
+    purple: 0,
+    any: 4
+  },
+
+  "夢が僕らの太陽さ": {
+    number: "PL!N-sd1-026-SD2",
+    pink: 1,
+    green: 0,
+    blue: 0,
+    red: 1,
+    yellow: 0,
+    purple: 0,
+    any: 3
+  },
+
+  "ワンダーメイツ": {
+    number: "PL!N-sd2-025-SD2",
+    pink: 1,
+    green: 1,
+    blue: 1,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 0
+  },
+
+  "Like a Treasure": {
+    number: "PL!N-bp7-031-L",
+    pink: 2,
+    green: 2,
+    blue: 0,
+    red: 0,
+    yellow: 2,
+    purple: 0,
+    any: 6
+  },
+
+  "Cooking with Love": {
+    number: "PL!N-bp7-028-L",
+    pink: 4,
+    green: 0,
+    blue: 0,
+    red: 3,
+    yellow: 0,
+    purple: 5,
+    any: 4
+  },
+
+  "Just Believe!!!": {
+    number: "PL!N-bp7-026-L",
+    pink: 0,
+    green: 2,
+    blue: 0,
+    red: 2,
+    yellow: 0,
+    purple: 2,
+    any: 6
+  },
+
+  "Colorful Dreams! Colorful Smiles!": {
+    number: "PL!N-bp7-025-L",
+    pink: 1,
+    green: 0,
+    blue: 1,
+    red: 0,
+    yellow: 1,
+    purple: 0,
+    any: 1
+  },
+
+  "Daydream Mermaid": {
+    number: "PL!N-bp4-030-L",
+    pink: 0,
+    green: 0,
+    blue: 1,
+    red: 0,
+    yellow: 0,
+    purple: 3,
+    any: 4
+  },
+
+  "VIVID WORLD": {
+    number: "PL!N-bp4-025-L",
+    pink: 0,
+    green: 0,
+    blue: 1,
+    red: 0,
+    yellow: 0,
+    purple: 2,
+    any: 4
+  },
+
+  "PASTEL": {
+    number: "PL!N-pb1-041-L",
+    pink: 0,
+    green: 1,
+    blue: 1,
+    red: 0,
+    yellow: 1,
+    purple: 1,
+    any: 5
+  },
+
+  "Eternalize Love!!": {
+    number: "PL!N-pb1-042-L",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 0,
+    purple: 0,
+    any: 12
+  },
+
+  "Stellar Stream": {
+    number: "PL!N-pb1-039-L",
+    pink: 4,
+    green: 0,
+    blue: 0,
+    red: 0,
+    yellow: 0,
+    purple: 4,
+    any: 6
+  },
+
+  "PHOENIX": {
+    number: "PL!N-pb1-038-L",
+    pink: 3,
+    green: 0,
+    blue: 0,
+    red: 1,
+    yellow: 0,
+    purple: 1,
+    any: 2
+  },
+
+  "Live with a smile!": {
+    number: "LL-bp5-001-L",
+    pink: 0,
+    green: 0,
+    blue: 0,
+    red: 1,
+    yellow: 0,
+    purple: 0,
+    any: 3
+  },
+
+  "MIRACLE NEW STORY": {
+    number: "PL!SP-bp5-024-L",
+    pink: 2,
+    green: 0,
+    blue: 0,
+    red: 4,
+    yellow: 0,
+    purple: 4,
+    any: 5
+  },
+
+  "無敵級＊ビリーバー": {
+    number: "PL!N-bp5-029-L",
+    pink: 0,
+    green: 1,
+    blue: 1,
+    red: 0,
+    yellow: 4,
+    purple: 1,
+    any: 10
+  },
+
+  "繚乱！ビクトリーロード": {
+    number: "PL!N-bp5-030-L",
+    pink: 1,
+    green: 1,
+    blue: 1,
+    red: 1,
+    yellow: 1,
+    purple: 1,
+    any: 7
   }
+
 };
 
 
-/* =========================
-   初期化
-   ========================= */
+/* =========================================================
+   共通
+   ========================================================= */
 
 const cardNames = Object.keys(liveCards);
 
@@ -331,10 +750,30 @@ const emptyHearts = () => ({
 let cheerHearts = emptyHearts();
 let memberHearts = emptyHearts();
 
+/*
+  各ライブカードの個別調整値。
 
-/* =========================
+  例：
+  {
+    "Burn!!": {
+      red: 1,
+      any: -1
+    }
+  }
+
+  → 赤+1、任意-1
+*/
+
+const cardAdjustments = [
+  emptyHearts(),
+  emptyHearts(),
+  emptyHearts()
+];
+
+
+/* =========================================================
    ライブカード表示
-   ========================= */
+   ========================================================= */
 
 function createLiveCards() {
 
@@ -346,19 +785,52 @@ function createLiveCards() {
 
     const card = document.createElement("div");
 
-    card.className = "card";
+    card.className = "card live-card";
 
     card.innerHTML = `
       <div class="card-title">${i + 1}枚目</div>
 
       <select id="liveSelect${i}">
         <option value="">カードを選択</option>
-        ${cardNames.map(name =>
-          `<option value="${name}">${name}</option>`
-        ).join("")}
+
+        ${cardNames.map(name => {
+
+          const number =
+            liveCards[name].number;
+
+          return `
+            <option value="${name}">
+              ${name}${number ? "　[" + number + "]" : ""}
+            </option>
+          `;
+
+        }).join("")}
+
       </select>
 
-      <div class="heart-grid" id="cardGrid${i}" style="margin-top:10px;"></div>
+      <div
+        id="cardNumber${i}"
+        class="card-number">
+      </div>
+
+      <div
+        class="heart-grid"
+        id="cardGrid${i}"
+        style="margin-top:10px;">
+      </div>
+
+      <div class="adjust-title">
+        必要ハートを調整
+      </div>
+
+      <div
+        class="adjust-grid"
+        id="adjustGrid${i}">
+      </div>
+
+      <div class="adjust-note">
+        現在のカード条件から＋/−できます
+      </div>
 
       <div class="total-box">
         このカードの必要数：
@@ -371,13 +843,116 @@ function createLiveCards() {
     document
       .getElementById(`liveSelect${i}`)
       .addEventListener("change", updateAll);
+
+    createAdjustmentBoxes(i);
   }
 }
 
 
-/* =========================
+/* =========================================================
+   調整ボタン
+   ========================================================= */
+
+function createAdjustmentBoxes(cardIndex) {
+
+  const container =
+    document.getElementById(`adjustGrid${cardIndex}`);
+
+  container.innerHTML = "";
+
+  colors.forEach(color => {
+
+    const box =
+      document.createElement("div");
+
+    box.className = "adjust-box";
+
+    box.innerHTML = `
+      <div class="adjust-name ${color.class}">
+        ${color.name}
+      </div>
+
+      <div class="adjust-controls">
+
+        <button
+          type="button"
+          class="adjust-button"
+          data-index="${cardIndex}"
+          data-color="${color.key}"
+          data-change="-1">
+          −
+        </button>
+
+        <span
+          class="adjust-value"
+          id="adjust-${cardIndex}-${color.key}">
+          0
+        </span>
+
+        <button
+          type="button"
+          class="adjust-button"
+          data-index="${cardIndex}"
+          data-color="${color.key}"
+          data-change="1">
+          ＋
+        </button>
+
+      </div>
+    `;
+
+    container.appendChild(box);
+  });
+
+  container
+    .querySelectorAll(".adjust-button")
+    .forEach(button => {
+
+      button.addEventListener("click", () => {
+
+        const index =
+          Number(button.dataset.index);
+
+        const color =
+          button.dataset.color;
+
+        const change =
+          Number(button.dataset.change);
+
+        const current =
+          cardAdjustments[index][color];
+
+        const select =
+          document.getElementById(
+            `liveSelect${index}`
+          );
+
+        /*
+          必要数がマイナスにならないようにする。
+        */
+
+        const base =
+          select.value
+            ? liveCards[select.value][color]
+            : 0;
+
+        const next =
+          Math.max(
+            -base,
+            current + change
+          );
+
+        cardAdjustments[index][color] = next;
+
+        updateAll();
+      });
+    });
+}
+
+
+/* =========================================================
    ハート表示
-   ========================= */
+   ========================================================= */
 
 function createHeartBoxes(container, values) {
 
@@ -385,7 +960,8 @@ function createHeartBoxes(container, values) {
 
   colors.forEach(color => {
 
-    const box = document.createElement("div");
+    const box =
+      document.createElement("div");
 
     box.className = "heart-box";
 
@@ -393,6 +969,7 @@ function createHeartBoxes(container, values) {
       <div class="heart-name ${color.class}">
         ${color.name}
       </div>
+
       <div class="heart-number">
         ${values[color.key] || 0}
       </div>
@@ -403,19 +980,21 @@ function createHeartBoxes(container, values) {
 }
 
 
-/* =========================
+/* =========================================================
    入力欄
-   ========================= */
+   ========================================================= */
 
 function createInputBoxes(containerId, type) {
 
-  const container = document.getElementById(containerId);
+  const container =
+    document.getElementById(containerId);
 
   container.innerHTML = "";
 
   colors.forEach(color => {
 
-    const box = document.createElement("div");
+    const box =
+      document.createElement("div");
 
     box.className = "input-box";
 
@@ -428,133 +1007,259 @@ function createInputBoxes(containerId, type) {
         type="number"
         min="0"
         value="0"
-        id="${type}-${color.key}"
-      >
+        id="${type}-${color.key}">
     `;
 
     container.appendChild(box);
 
     document
-      .getElementById(`${type}-${color.key}`)
-      .addEventListener("input", updateAll);
+      .getElementById(
+        `${type}-${color.key}`
+      )
+      .addEventListener(
+        "input",
+        updateAll
+      );
   });
 }
 
 
-/* =========================
+/* =========================================================
    入力値取得
-   ========================= */
+   ========================================================= */
 
 function getInputs(type) {
 
-  const result = emptyHearts();
+  const result =
+    emptyHearts();
 
   colors.forEach(color => {
 
     const input =
-      document.getElementById(`${type}-${color.key}`);
+      document.getElementById(
+        `${type}-${color.key}`
+      );
 
     result[color.key] =
-      Math.max(0, Number(input.value) || 0);
+      Math.max(
+        0,
+        Number(input.value) || 0
+      );
   });
 
   return result;
 }
 
 
-/* =========================
+/* =========================================================
    合計
-   ========================= */
+   ========================================================= */
 
 function heartTotal(hearts) {
 
   return colors.reduce(
-    (sum, color) => sum + hearts[color.key],
+    (sum, color) =>
+      sum + hearts[color.key],
     0
   );
 }
 
 
-/* =========================
+/* =========================================================
+   各カードの現在の必要ハート
+   ========================================================= */
+
+function getCardRequired(cardIndex) {
+
+  const select =
+    document.getElementById(
+      `liveSelect${cardIndex}`
+    );
+
+  const name =
+    select.value;
+
+  if (!name) {
+    return emptyHearts();
+  }
+
+  const base =
+    liveCards[name];
+
+  const adjusted =
+    emptyHearts();
+
+  colors.forEach(color => {
+
+    adjusted[color.key] =
+      Math.max(
+        0,
+        base[color.key] +
+        cardAdjustments[cardIndex][color.key]
+      );
+  });
+
+  return adjusted;
+}
+
+
+/* =========================================================
    ライブカード合計
-   ========================= */
+   ========================================================= */
 
 function getRequiredHearts() {
 
-  const total = emptyHearts();
+  const total =
+    emptyHearts();
 
   for (let i = 0; i < 3; i++) {
 
     const select =
-      document.getElementById(`liveSelect${i}`);
+      document.getElementById(
+        `liveSelect${i}`
+      );
 
-    const name = select.value;
+    const name =
+      select.value;
 
     const values =
-      liveCards[name] || emptyHearts();
+      getCardRequired(i);
 
     colors.forEach(color => {
-      total[color.key] += values[color.key];
+
+      total[color.key] +=
+        values[color.key];
+
     });
 
-    const cardGrid =
-      document.getElementById(`cardGrid${i}`);
 
-    createHeartBoxes(cardGrid, values);
+    /*
+      カード番号表示
+    */
 
-    document.getElementById(`cardTotal${i}`).textContent =
+    const numberElement =
+      document.getElementById(
+        `cardNumber${i}`
+      );
+
+    if (name && liveCards[name].number) {
+
+      numberElement.textContent =
+        liveCards[name].number;
+
+    } else {
+
+      numberElement.textContent = "";
+
+    }
+
+
+    /*
+      現在の必要ハート表示
+    */
+
+    createHeartBoxes(
+      document.getElementById(
+        `cardGrid${i}`
+      ),
+      values
+    );
+
+    document.getElementById(
+      `cardTotal${i}`
+    ).textContent =
       heartTotal(values);
+
+
+    /*
+      ＋−調整値表示
+    */
+
+    colors.forEach(color => {
+
+      const adjustment =
+        cardAdjustments[i][color.key];
+
+      const element =
+        document.getElementById(
+          `adjust-${i}-${color.key}`
+        );
+
+      if (adjustment > 0) {
+
+        element.textContent =
+          `+${adjustment}`;
+
+      } else {
+
+        element.textContent =
+          adjustment;
+
+      }
+
+    });
   }
 
   return total;
 }
 
 
-/* =========================
+/* =========================================================
    成功判定
-   ========================= */
+   ========================================================= */
 
 function checkSuccess(required, current) {
-
-  /*
-    まず固定色を必要数まで満たす。
-
-    固定色の不足
-    ↓
-
-    任意ハートで補えるか確認。
-
-    さらに固定色の余ったハートも
-    任意ハートとして必要数に使える。
-  */
 
   let fixedDeficit = 0;
   let coloredExtra = 0;
 
-  const fixedColors = colors.filter(
-    color => color.key !== "any"
-  );
+  const fixedColors =
+    colors.filter(
+      color => color.key !== "any"
+    );
 
   fixedColors.forEach(color => {
 
-    const req = required[color.key];
-    const cur = current[color.key];
+    const req =
+      required[color.key];
+
+    const cur =
+      current[color.key];
 
     if (cur < req) {
-      fixedDeficit += req - cur;
+
+      fixedDeficit +=
+        req - cur;
+
     } else {
-      coloredExtra += cur - req;
+
+      coloredExtra +=
+        cur - req;
+
     }
   });
 
+
+  /*
+    任意ハート
+
+    エール/メンバーの任意
+    ＋
+    固定色の余り
+
+    を任意として使用可能
+  */
+
   const anyAvailable =
-    current.any + coloredExtra;
+    current.any +
+    coloredExtra;
 
   const anyRequired =
     required.any;
 
   const totalNeeded =
-    fixedDeficit + anyRequired;
+    fixedDeficit +
+    anyRequired;
 
   const canSatisfy =
     anyAvailable >= totalNeeded;
@@ -566,49 +1271,72 @@ function checkSuccess(required, current) {
     anyRequired,
     shortage: Math.max(
       0,
-      totalNeeded - anyAvailable
+      totalNeeded -
+      anyAvailable
     )
   };
 }
 
 
-/* =========================
+/* =========================================================
    全体更新
-   ========================= */
+   ========================================================= */
 
 function updateAll() {
 
   const required =
     getRequiredHearts();
 
-  document.getElementById("requiredTotal").textContent =
+
+  /*
+    必要ハート
+  */
+
+  document.getElementById(
+    "requiredTotal"
+  ).textContent =
     heartTotal(required);
 
   createHeartBoxes(
-    document.getElementById("requiredGrid"),
+    document.getElementById(
+      "requiredGrid"
+    ),
     required
   );
 
 
-  /* エール */
+  /*
+    エール
+  */
 
-  cheerHearts = getInputs("cheer");
+  cheerHearts =
+    getInputs("cheer");
 
-  document.getElementById("cheerTotal").textContent =
+  document.getElementById(
+    "cheerTotal"
+  ).textContent =
     heartTotal(cheerHearts);
 
 
-  /* メンバー */
+  /*
+    メンバー
+  */
 
-  memberHearts = getInputs("member");
+  memberHearts =
+    getInputs("member");
 
-  document.getElementById("memberTotal").textContent =
+  document.getElementById(
+    "memberTotal"
+  ).textContent =
     heartTotal(memberHearts);
 
 
-  /* 現在のハート */
+  /*
+    現在のハート
+  */
 
-  const current = emptyHearts();
+  const current =
+    emptyHearts();
 
   colors.forEach(color => {
 
@@ -619,31 +1347,47 @@ function updateAll() {
   });
 
   createHeartBoxes(
-    document.getElementById("currentGrid"),
+    document.getElementById(
+      "currentGrid"
+    ),
     current
   );
 
-  document.getElementById("currentTotal").textContent =
+  document.getElementById(
+    "currentTotal"
+  ).textContent =
     heartTotal(current);
 
 
-  /* 判定 */
+  /*
+    判定
+  */
 
   const result =
-    checkSuccess(required, current);
+    checkSuccess(
+      required,
+      current
+    );
 
   const resultBox =
-    document.getElementById("result");
+    document.getElementById(
+      "result"
+    );
 
   const resultSub =
-    document.getElementById("resultSub");
+    document.getElementById(
+      "resultSub"
+    );
+
 
   if (heartTotal(required) === 0) {
 
     resultBox.className =
       "result failure";
 
-    resultBox.querySelector(".result-main").textContent =
+    resultBox
+      .querySelector(".result-main")
+      .textContent =
       "ライブカードを選択してください";
 
     resultSub.textContent = "";
@@ -657,7 +1401,9 @@ function updateAll() {
     resultBox.className =
       "result success";
 
-    resultBox.querySelector(".result-main").textContent =
+    resultBox
+      .querySelector(".result-main")
+      .textContent =
       "🎉 ライブ成功！";
 
     resultSub.textContent =
@@ -668,7 +1414,9 @@ function updateAll() {
     resultBox.className =
       "result failure";
 
-    resultBox.querySelector(".result-main").textContent =
+    resultBox
+      .querySelector(".result-main")
+      .textContent =
       "ライブ条件未達";
 
     resultSub.textContent =
@@ -677,18 +1425,33 @@ function updateAll() {
 }
 
 
-/* =========================
+/* =========================================================
    リセット
-   ========================= */
+   ========================================================= */
 
 function resetAll() {
 
+  /*
+    ライブカード
+  */
+
   for (let i = 0; i < 3; i++) {
 
-    document.getElementById(`liveSelect${i}`).value =
-      "";
+    document.getElementById(
+      `liveSelect${i}`
+    ).value = "";
 
+    colors.forEach(color => {
+
+      cardAdjustments[i][color.key] = 0;
+
+    });
   }
+
+
+  /*
+    エール・メンバー
+  */
 
   colors.forEach(color => {
 
@@ -702,13 +1465,14 @@ function resetAll() {
 
   });
 
+
   updateAll();
 }
 
 
-/* =========================
+/* =========================================================
    起動
-   ========================= */
+   ========================================================= */
 
 createLiveCards();
 
